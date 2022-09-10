@@ -9,6 +9,23 @@ const getAll = async () => {
   return response.json();
 };
 
+const create = async (newGame) => {
+  const response = await fetch(baseUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(newGame),
+  });
+
+  if (response.ok) {
+    return response.json();
+  } else {
+    var body = await response.json();
+    console.log(body);
+    return null;
+  }
+};
 const update = async (updatedGame) => {
   const response = await fetch(`${baseUrl}/${updatedGame.id}`, {
     method: "PUT",
@@ -39,4 +56,5 @@ export default {
   getAll,
   update,
   deleteGame,
+  create,
 };

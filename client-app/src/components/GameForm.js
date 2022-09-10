@@ -1,7 +1,14 @@
 import { useState } from "react";
 
-const GameForm = ({ inputGame, handleGameUpdate }) => {
-  const [game, setGame] = useState(inputGame);
+const GameForm = ({ mode, inputGame, handleGameUpdate }) => {
+  const [game, setGame] = useState(
+    mode === "new"
+      ? {
+          name: "",
+          publisher: "",
+        }
+      : inputGame
+  );
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -44,7 +51,7 @@ const GameForm = ({ inputGame, handleGameUpdate }) => {
             value={game.publisher}
             onChange={handleChange}
           />
-          <button type="submit">Update</button>
+          <button type="submit">Submit</button>
         </div>
       </form>
     </>

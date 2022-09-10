@@ -6,13 +6,8 @@ const GamesList = ({ games, handleGameUpdate, handleGameDelete }) => {
     ["flexDirection"]: "column ",
   };
 
-  const container = {
-    padding: "10px",
-    margin: "10px",
-  };
-
   return (
-    <div style={container}>
+    <>
       <h2>Games List</h2>
       <div style={listStyle}>
         {games.map((game) => (
@@ -25,7 +20,7 @@ const GamesList = ({ games, handleGameUpdate, handleGameDelete }) => {
           </div>
         ))}
       </div>
-    </div>
+    </>
   );
 };
 
