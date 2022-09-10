@@ -92,8 +92,13 @@ app.put(`${gamesEndpoint}/:id`, (req, res) => {
 
 app.delete(`${gamesEndpoint}/:id`, (req, res) => {
   const id = req.params.id;
-  games = games.filter((x) => x.id !== id);
+  const game = games.find((x) => x.id === id);
 
+  if (!game) {
+    return res.status(400).json({ error: `Game ${id} not found1` });
+  }
+
+  games = games.filter((x) => x.id !== id);
   res.status(204).end();
 });
 
