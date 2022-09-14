@@ -9,7 +9,7 @@ app.use(express.json());
 app.use(cors());
 app.use(morganConfig);
 
-const port = 3001;
+const port = process.env.PORT || 3001;
 const gamesEndpoint = "/api/games";
 let games = [
   {

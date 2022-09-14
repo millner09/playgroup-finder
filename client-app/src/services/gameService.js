@@ -1,4 +1,4 @@
-const baseUrl = "http://localhost:3001/api/games";
+const baseUrl = `${process.env.REACT_APP_API_BASE_URL}/api/games`;
 
 const getAll = async () => {
   const response = await fetch(baseUrl, {
