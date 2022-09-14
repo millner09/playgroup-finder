@@ -1,2 +1,4 @@
 **/node_modules
 client-app/.env
+backend/.env
+.vscode

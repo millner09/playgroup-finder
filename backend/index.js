@@ -1,8 +1,8 @@
 const express = require("express");
 const cors = require("cors");
-const { v4: uuidv4 } = require("uuid");
-
+const Game = require("./models/game")
 const morganConfig = require("./morganConfig");
+var ObjectId = require('mongoose').Types.ObjectId;
 
 const app = express();
 app.use(express.json());
@@ -11,39 +11,32 @@ app.use(morganConfig);
 
 const port = process.env.PORT || 3001;
 const gamesEndpoint = "/api/games";
-let games = [
-  {
-    id: "84490d14-0802-48d2-8286-66628e8844b0",
-    name: "Flesh and Blood",
-    publisher: "Legend Story Studioes",
-  },
-  {
-    id: "18248771-23b7-4eb0-8df2-51de1611bf69",
-    name: "Android: Netrunner",
-    publisher: "Fantasy Flight Games",
-  },
-  {
-    id: "7c20da7e-c4ef-47df-b494-05489dc4e15c",
-    name: "Harry Potter: Death Eaters Rising",
-    publisher: "The Op",
-  },
-];
 
 app.get("/", (req, res) => {
   res.send("Hello World!");
 });
 
 app.get(gamesEndpoint, (req, res) => {
-  res.json(games);
+  Game.find({})
+    .then((games) => {
+      res.json(games);
+    })
 });
 
 app.get(`${gamesEndpoint}/:id`, (req, res) => {
-  const game = games.find((x) => x.id === req.params.id);
-  if (game) {
-    res.json(game);
-  } else {
-    res.status(404).end();
+  if (!ObjectId.isValid(req.params.id)) {
+    return res.status(400).json({
+      error: "Invalid Id"
+    })
   }
+  Game.findById(req.params.id)
+    .then((game) => {
+      if (game) {
+        res.json(game);
+      }
+
+      res.status(404).end();
+    })
 });
 
 app.post(gamesEndpoint, (req, res) => {
@@ -55,19 +48,26 @@ app.post(gamesEndpoint, (req, res) => {
     });
   }
 
-  const newGame = {
-    id: uuidv4(),
-    ...body,
-  };
+  const newGame = new Game({
+    name: body.name,
+    publisher: body.publisher
+  });
 
-  games = games.concat(newGame);
-
-  res.json(newGame);
+  newGame.save()
+    .then((savedGame) => {
+      res.json(savedGame)
+    })
 });
 
 app.put(`${gamesEndpoint}/:id`, (req, res) => {
   const id = req.params.id;
   const body = req.body;
+
+  if (!ObjectId.isValid(req.params.id)) {
+    return res.status(400).json({
+      error: "Invalid Id"
+    })
+  }
 
   if (!body.name || !body.publisher) {
     return res.status(400).json({
@@ -75,31 +75,25 @@ app.put(`${gamesEndpoint}/:id`, (req, res) => {
     });
   }
 
-  const game = games.find((x) => x.id === id);
-  if (!game) {
-    return res.status(404).end();
-  }
-
-  const updatedGame = {
-    id,
-    ...body,
-  };
-
-  games = games.map((game) => (game.id !== id ? game : updatedGame));
-
-  res.json(updatedGame);
+  Game.findByIdAndUpdate(id, { ...body }, { returnDocument: 'after' })
+    .then((updatedGame) => {
+      res.json(updatedGame)
+    })
 });
 
 app.delete(`${gamesEndpoint}/:id`, (req, res) => {
   const id = req.params.id;
-  const game = games.find((x) => x.id === id);
 
-  if (!game) {
-    return res.status(400).json({ error: `Game ${id} not found1` });
+  if (!ObjectId.isValid(req.params.id)) {
+    return res.status(400).json({
+      error: "Invalid Id"
+    })
   }
 
-  games = games.filter((x) => x.id !== id);
-  res.status(204).end();
+  Game.findByIdAndRemove(id)
+    .then((result) => {
+      res.status(204).end();
+    })
 });
 
 app.listen(port, () => {

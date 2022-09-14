@@ -18,7 +18,6 @@ const GameDashboard = () => {
     );
 
     const res = await gameService.update(updatedGame);
-    console.log(JSON.stringify(res));
   };
 
   const handleGameDelete = async (id) => {
