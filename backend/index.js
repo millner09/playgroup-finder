@@ -16,19 +16,15 @@ app.get("/", (req, res) => {
   res.send("Hello World!");
 });
 
-app.get(gamesEndpoint, (req, res) => {
+app.get(gamesEndpoint, (req, res, next) => {
   Game.find({})
     .then((games) => {
       res.json(games);
     })
+    .catch(error => next(error))
 });
 
-app.get(`${gamesEndpoint}/:id`, (req, res) => {
-  if (!ObjectId.isValid(req.params.id)) {
-    return res.status(400).json({
-      error: "Invalid Id"
-    })
-  }
+app.get(`${gamesEndpoint}/:id`, (req, res, next) => {
   Game.findById(req.params.id)
     .then((game) => {
       if (game) {
@@ -37,16 +33,11 @@ app.get(`${gamesEndpoint}/:id`, (req, res) => {
 
       res.status(404).end();
     })
+    .catch(error => next(error))
 });
 
-app.post(gamesEndpoint, (req, res) => {
+app.post(gamesEndpoint, (req, res, next) => {
   const body = req.body;
-
-  if (!body.name || !body.publisher) {
-    return res.status(400).json({
-      error: "Provide name and publisher",
-    });
-  }
 
   const newGame = new Game({
     name: body.name,
@@ -57,44 +48,44 @@ app.post(gamesEndpoint, (req, res) => {
     .then((savedGame) => {
       res.json(savedGame)
     })
+    .catch(error => next(error))
 });
 
-app.put(`${gamesEndpoint}/:id`, (req, res) => {
+app.put(`${gamesEndpoint}/:id`, (req, res, next) => {
   const id = req.params.id;
-  const body = req.body;
+  const { name, publisher } = req.body
 
-  if (!ObjectId.isValid(req.params.id)) {
-    return res.status(400).json({
-      error: "Invalid Id"
-    })
-  }
-
-  if (!body.name || !body.publisher) {
-    return res.status(400).json({
-      error: "Provide name and publisher",
-    });
-  }
-
-  Game.findByIdAndUpdate(id, { ...body }, { returnDocument: 'after' })
+  Game.findByIdAndUpdate(id, { name, publisher }, {
+    new: true,
+    runValidators: true, context: "query"
+  })
     .then((updatedGame) => {
       res.json(updatedGame)
     })
+    .catch(error => next(error))
 });
 
-app.delete(`${gamesEndpoint}/:id`, (req, res) => {
+app.delete(`${gamesEndpoint}/:id`, (req, res, next) => {
   const id = req.params.id;
-
-  if (!ObjectId.isValid(req.params.id)) {
-    return res.status(400).json({
-      error: "Invalid Id"
-    })
-  }
 
   Game.findByIdAndRemove(id)
     .then((result) => {
       res.status(204).end();
     })
+    .catch(error => next(error))
 });
+
+const errorHandler = (error, req, res, next) => {
+  console.error(error.message)
+
+  if (error.name === 'CastError') {
+    return res.status(400).send({ error: 'malformatted id' })
+  }
+  else if (error.name === 'ValidationError') { return res.status(400).json({ error: error.message }) }
+
+  next(error)
+}
+app.use(errorHandler);
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);

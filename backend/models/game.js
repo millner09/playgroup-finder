@@ -6,8 +6,16 @@ const url = process.env.MONGODB_URI
 mongoose.connect(url)
     .then(result => { console.log('connected to MongoDB') }).catch((error) => { console.log('error connecting to MongoDB:', error.message) })
 const gameSchema = new mongoose.Schema({
-    name: String,
-    publisher: String,
+    name:
+    {
+        type: String,
+        minLength: 4
+
+    },
+    publisher: {
+        type: String,
+        minLength: 4
+    },
 })
 
 gameSchema.set('toJSON', {

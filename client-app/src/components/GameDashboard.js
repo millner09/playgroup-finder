@@ -6,6 +6,7 @@ import GameForm from "./GameForm";
 const GameDashboard = () => {
   const [games, setGames] = useState([]);
   const [showNewGameForm, setShowNewGameForm] = useState(false);
+  const [errorMsg, setErrorMessage] = useState("");
 
   const fetchData = async () => {
     const res = await gameService.getAll();
@@ -51,6 +52,7 @@ const GameDashboard = () => {
   return (
     <div style={container}>
       <h1>Game Dashboard</h1>
+      <span>{errorMsg}</span>
       <button
         onClick={() => {
           setShowNewGameForm(true);
